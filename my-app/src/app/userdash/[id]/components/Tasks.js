@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import axios from 'axios';
 import { motion } from 'framer-motion';
@@ -12,17 +12,11 @@ export default function Tasks() {
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState('all');
-  const [sortByDate, setSortByDate] = useState('desc'); // New state for sorting
+  const [sortByDate, setSortByDate] = useState('desc');
   const backendURL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
 
   // Fetch tasks when userId is available
-  useEffect(() => {
-    if (userId) {
-      fetchUserTasks();
-    }
-  }, [userId]);
-
-  const fetchUserTasks = async () => {
+  const fetchUserTasks = useCallback(async () => {
     setIsLoading(true);
     try {
       const res = await axios.get(`${backendURL}/api/tasks/user/${userId}`);
@@ -34,7 +28,13 @@ export default function Tasks() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [userId, backendURL]);
+
+  useEffect(() => {
+    if (userId) {
+      fetchUserTasks();
+    }
+  }, [userId, fetchUserTasks]);
 
   const handleStatusChange = async (taskId, newStatus) => {
     try {

@@ -67,7 +67,7 @@ export default function SignupPage() {
     }
 
     try {
-      const response = await fetch('https://ems-backend-nkom.onrender.com/api/signup', {
+      const response = await fetch('https://emss-wtii.onrender.com/api/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

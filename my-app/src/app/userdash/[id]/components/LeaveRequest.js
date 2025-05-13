@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -17,20 +17,21 @@ const LeaveRequest = () => {
   const backendURL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
 
   // Fetch user's leave requests
-  useEffect(() => {
+  const fetchLeaveRequests = useCallback(async () => {
     if (session?.user?.id) {
-      const fetchLeaveRequests = async () => {
-        try {
-          const res = await axios.get(`${backendURL}/api/leaves/user/${session.user.id}`);
-          setLeaveRequests(res.data);
-        } catch (err) {
-          console.error('Error fetching leave requests:', err);
-          toast.error('Failed to fetch leave requests');
-        }
-      };
-      fetchLeaveRequests();
+      try {
+        const res = await axios.get(`${backendURL}/api/leaves/user/${session.user.id}`);
+        setLeaveRequests(res.data);
+      } catch (err) {
+        console.error('Error fetching leave requests:', err);
+        toast.error('Failed to fetch leave requests');
+      }
     }
-  }, [session]);
+  }, [session, backendURL]);
+
+  useEffect(() => {
+    fetchLeaveRequests();
+  }, [fetchLeaveRequests]);
 
   // Handle form input changes
   const handleChange = (e) => {

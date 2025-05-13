@@ -301,7 +301,7 @@ export default function Contact() {
                           </svg>
                         </div>
                         <h3 className="text-xl font-semibold text-slate-800 mb-2">Thank You!</h3>
-                        <p className="text-slate-600">Your message has been sent successfully. We'll get back to you shortly.</p>
+                        <p className="text-slate-600">Your message has been sent successfully. We will get back to you shortly.</p>
                       </motion.div>
                     ) : (
                       <form onSubmit={handleSubmit} className="space-y-5 relative z-10">

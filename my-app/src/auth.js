@@ -16,7 +16,7 @@ export const authOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        const res = await fetch("https://ems-backend-nkom.onrender.com/api/login", {
+        const res = await fetch("https://emss-wtii.onrender.com/api/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(credentials),
@@ -55,7 +55,7 @@ export const authOptions = {
   callbacks: {
     async signIn({ user, account }) {
       if (["github", "google"].includes(account.provider)) {
-        const res = await fetch("https://ems-backend-nkom.onrender.com/api/oauth-login", {
+        const res = await fetch("https://emss-wtii.onrender.com/api/oauth-login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

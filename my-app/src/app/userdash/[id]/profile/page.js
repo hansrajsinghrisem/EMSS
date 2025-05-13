@@ -34,7 +34,7 @@ export default function ProfileSettings() {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/api/update-user-details', {
+      const response = await fetch('https://emss-wtii.onrender.com/api/update-user-details', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: session?.user?.id, ...profileForm }),
@@ -59,7 +59,7 @@ export default function ProfileSettings() {
       return;
     }
     try {
-      const response = await fetch('http://localhost:5000/api/change-password', {
+      const response = await fetch('https://emss-wtii.onrender.com/api/change-password', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: session?.user?.id, ...passwordForm }),

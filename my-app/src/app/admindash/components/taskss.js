@@ -1,6 +1,6 @@
-//frontend/my-app/src/app/admindash/components/taskss.js
 'use client';
-import { useEffect, useState, useRef } from 'react';
+
+import { useEffect, useState, useRef, useCallback } from 'react';
 import axios from 'axios';
 
 export default function AssignTaskPage() {
@@ -30,25 +30,19 @@ export default function AssignTaskPage() {
   const backendURL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const adminId = process.env.NEXT_PUBLIC_ADMIN_ID;
 
-  // Fetch users and tasks
-  useEffect(() => {
-    fetchUsers();
-    fetchTasks();
-  }, [sortOptions]);
-
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
-      const res = await axios.get('https://ems-backend-nkom.onrender.com/api/approved-users');
+      const res = await axios.get('https://emss-wtii.onrender.com/api/approved-users');
       setUsers(res.data);
     } catch (err) {
       console.error('Failed to fetch users:', err);
     }
-  };
+  }, []);
 
-  const fetchTasks = async () => {
+  const fetchTasks = useCallback(async () => {
     try {
       // Fetch active tasks
-      const activeRes = await axios.get('https://ems-backend-nkom.onrender.com/api/tasks', {
+      const activeRes = await axios.get('https://emss-wtii.onrender.com/api/tasks', {
         params: {
           sortBy: sortOptions.active.sortBy,
           sortOrder: sortOptions.active.sortOrder,
@@ -57,7 +51,7 @@ export default function AssignTaskPage() {
       setActiveTasks(activeRes.data);
 
       // Fetch completed tasks
-      const completedRes = await axios.get('https://ems-backend-nkom.onrender.com/api/tasks/completed', {
+      const completedRes = await axios.get('https://emss-wtii.onrender.com/api/tasks/completed', {
         params: {
           sortBy: sortOptions.completed.sortBy,
           sortOrder: sortOptions.completed.sortOrder,
@@ -66,7 +60,7 @@ export default function AssignTaskPage() {
       setCompletedTasks(completedRes.data);
 
       // Fetch deleted tasks
-      const deletedRes = await axios.get('https://ems-backend-nkom.onrender.com/api/tasks/deleted', {
+      const deletedRes = await axios.get('https://emss-wtii.onrender.com/api/tasks/deleted', {
         params: {
           sortBy: sortOptions.deleted.sortBy,
           sortOrder: sortOptions.deleted.sortOrder,
@@ -76,7 +70,12 @@ export default function AssignTaskPage() {
     } catch (err) {
       console.error('Failed to fetch tasks:', err);
     }
-  };
+  }, [sortOptions]);
+
+  useEffect(() => {
+    fetchUsers();
+    fetchTasks();
+  }, [fetchUsers, fetchTasks]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -86,11 +85,11 @@ export default function AssignTaskPage() {
     e.preventDefault();
     try {
       if (editTaskId) {
-        await axios.put(`https://ems-backend-nkom.onrender.com/api/tasks/${editTaskId}`, form);
+        await axios.put(`https://emss-wtii.onrender.com/api/tasks/${editTaskId}`, form);
         setMessage('Task updated successfully');
         setIsEditMode(false);
       } else {
-        await axios.post('https://ems-backend-nkom.onrender.com/api/tasks', {
+        await axios.post('https://emss-wtii.onrender.com/api/tasks', {
           ...form,
           createdBy: adminId,
         });
@@ -140,7 +139,7 @@ export default function AssignTaskPage() {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`https://ems-backend-nkom.onrender.com/api/tasks/${id}`);
+      await axios.delete(`https://emss-wtii.onrender.com/api/tasks/${id}`);
       setMessage('Task moved to trash');
       fetchTasks();
       
@@ -161,7 +160,7 @@ export default function AssignTaskPage() {
 
   const handleComplete = async (task) => {
     try {
-      await axios.put(`https://ems-backend-nkom.onrender.com/api/tasks/${task._id}/status`, {
+      await axios.put(`https://emss-wtii.onrender.com/api/tasks/${task._id}/status`, {
         status: task.status === 'completed' ? 'pending' : 'completed',
         userId: adminId,
       });
@@ -185,7 +184,7 @@ export default function AssignTaskPage() {
 
   const handleRestore = async (id) => {
     try {
-      await axios.put(`https://ems-backend-nkom.onrender.com/api/tasks/${id}/restore`);
+      await axios.put(`https://emss-wtii.onrender.com/api/tasks/${id}/restore`);
       setMessage('Task restored successfully');
       fetchTasks();
       
@@ -348,12 +347,6 @@ export default function AssignTaskPage() {
                       >
                         Delete
                       </button>
-                      {/* <button
-                        onClick={() => handleComplete(task)}
-                        className={`px-3 py-1.5 text-sm text-white rounded bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-300 ease-in-out transform hover:scale-105`}
-                      >
-                        {task.status === 'completed' ? 'Undo' : 'Complete'}
-                      </button> */}
                     </>
                   )}
                 </div>
@@ -369,7 +362,6 @@ export default function AssignTaskPage() {
     <div className="min-h-screen bg-gray-50 py-10">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
-          {/* Form Section */}
           <div 
             ref={formRef} 
             className={`p-6 bg-gradient-to-r from-purple-50 to-blue-50 transition-all duration-500 ease-in-out ${isEditMode ? 'border-l-4 border-purple-500' : ''}`}
@@ -487,16 +479,13 @@ export default function AssignTaskPage() {
             </form>
           </div>
 
-          {/* Notification */}
           {message && (
             <div className="bg-green-50 border-t border-b border-green-200 px-4 py-3 text-center animate-fadeIn">
               <p className="text-green-800 font-medium">{message}</p>
             </div>
           )}
 
-          {/* Task Lists Section */}
           <div className="p-6">
-            {/* Tabs */}
             <div className="border-b border-gray-200 mb-6">
               <nav className="-mb-px flex space-x-8">
                 <button
@@ -541,7 +530,6 @@ export default function AssignTaskPage() {
               </nav>
             </div>
 
-            {/* Task Lists */}
             {renderTaskList(activeTasks, 'active')}
             {renderTaskList(completedTasks, 'completed')}
             {renderTaskList(deletedTasks, 'deleted')}

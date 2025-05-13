@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import axios from 'axios';
 import Link from 'next/link';
@@ -24,40 +24,41 @@ const Overview = () => {
   const [error, setError] = useState(null);
   const backendURL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
 
-  useEffect(() => {
-    console.log('Overview session:', session);
+  // Fetch stats for tasks and leaves
+  const fetchStats = useCallback(async () => {
     if (userId) {
-      const fetchStats = async () => {
-        try {
-          const [tasksRes, leavesRes] = await Promise.all([
-            axios.get(`${backendURL}/api/tasks/user/${userId}`),
-            axios.get(`${backendURL}/api/leaves/user/${userId}`),
-          ]);
-          const tasks = tasksRes.data;
-          const leaves = leavesRes.data;
+      try {
+        const [tasksRes, leavesRes] = await Promise.all([
+          axios.get(`${backendURL}/api/tasks/user/${userId}`),
+          axios.get(`${backendURL}/api/leaves/user/${userId}`),
+        ]);
+        const tasks = tasksRes.data;
+        const leaves = leavesRes.data;
 
-          setStats({
-            totalTasks: tasks.length,
-            pendingTasks: tasks.filter(t => t.status === 'pending').length,
-            inProgressTasks: tasks.filter(t => t.status === 'in-progress').length,
-            completedTasks: tasks.filter(t => t.status === 'completed').length,
-            onHoldTasks: tasks.filter(t => t.status === 'on-hold').length,
-            totalLeaves: leaves.length,
-            pendingLeaves: leaves.filter(l => l.status === 'Pending').length,
-            approvedLeaves: leaves.filter(l => l.status === 'Approved').length,
-            deniedLeaves: leaves.filter(l => l.status === 'Denied').length,
-          });
-          setLoading(false);
-        } catch (err) {
-          console.error('Failed to fetch overview stats:', err);
-          setError('Failed to load dashboard data. Please try again later.');
-          setLoading(false);
-          toast.error('Failed to load dashboard data', { duration: 5000 });
-        }
-      };
-      fetchStats();
+        setStats({
+          totalTasks: tasks.length,
+          pendingTasks: tasks.filter(t => t.status === 'pending').length,
+          inProgressTasks: tasks.filter(t => t.status === 'in-progress').length,
+          completedTasks: tasks.filter(t => t.status === 'completed').length,
+          onHoldTasks: tasks.filter(t => t.status === 'on-hold').length,
+          totalLeaves: leaves.length,
+          pendingLeaves: leaves.filter(l => l.status === 'Pending').length,
+          approvedLeaves: leaves.filter(l => l.status === 'Approved').length,
+          deniedLeaves: leaves.filter(l => l.status === 'Denied').length,
+        });
+        setLoading(false);
+      } catch (err) {
+        console.error('Failed to fetch overview stats:', err);
+        setError('Failed to load dashboard data. Please try again later.');
+        setLoading(false);
+        toast.error('Failed to load dashboard data', { duration: 5000 });
+      }
     }
-  }, [userId]);
+  }, [userId, backendURL]);
+
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
 
   const buttonClasses =
     'inline-flex items-center justify-center px-4 py-2 text-white text-sm font-medium rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 transform hover:scale-105 transition-all duration-300 shadow-md hover:shadow-lg w-full';
@@ -118,7 +119,7 @@ const Overview = () => {
     <div className="p-8 max-w-7xl mx-auto bg-gradient-to-b from-gray-50 to-gray-100 min-h-screen">
       <div className="text-center mb-12 animate-fadeIn">
         <h1 className="text-4xl font-extrabold text-gray-800 tracking-tight relative inline-block">
-          {session?.user?.fname}'s Dashboard
+          {session?.user?.fname} Dashboard
           <span className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-600 to-purple-600 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span>
         </h1>
         <p className="text-gray-600 mt-2">View and manage your tasks and leave requests</p>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -21,20 +21,21 @@ export default function Leave() {
   const backendURL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
 
   // Fetch user's leave requests
-  useEffect(() => {
+  const fetchLeaveRequests = useCallback(async () => {
     if (session?.user?.id) {
-      const fetchLeaveRequests = async () => {
-        try {
-          const res = await axios.get(`${backendURL}/api/leaves/user/${session.user.id}`);
-          setLeaveRequests(res.data);
-        } catch (err) {
-          console.error('Error fetching leave requests:', err);
-          toast.error('Failed to fetch leave requests');
-        }
-      };
-      fetchLeaveRequests();
+      try {
+        const res = await axios.get(`${backendURL}/api/leaves/user/${session.user.id}`);
+        setLeaveRequests(res.data);
+      } catch (err) {
+        console.error('Error fetching leave requests:', err);
+        toast.error('Failed to fetch leave requests');
+      }
     }
-  }, [session]);
+  }, [session, backendURL]);
+
+  useEffect(() => {
+    fetchLeaveRequests();
+  }, [fetchLeaveRequests]);
 
   // Handle form input changes
   const handleChange = (e) => {
@@ -305,7 +306,7 @@ export default function Leave() {
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 21" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4" />
                   </svg>
                 </div>
@@ -362,7 +363,7 @@ export default function Leave() {
                 currentCriteria={sortCriteria}
               />
               <SortDropdown
-                label="Status"
+                badge label="Status"
                 options={statusSortOptions}
                 category="status"
                 currentCriteria={sortCriteria}

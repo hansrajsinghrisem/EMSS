@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -26,11 +26,7 @@ const EmployeeManagement = () => {
   const formRef = useRef(null);
   const backendURL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
 
-  useEffect(() => {
-    fetchAllUsers();
-  }, []);
-
-  const fetchAllUsers = async () => {
+  const fetchAllUsers = useCallback(async () => {
     setLoading(true);
     try {
       const [pendingRes, approvedRes, deletedRes, deniedRes] = await Promise.all([
@@ -49,11 +45,15 @@ const EmployeeManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [backendURL]);
+
+  useEffect(() => {
+    fetchAllUsers();
+  }, [fetchAllUsers]);
 
   const approveUser = async (id) => {
     try {
-      await axios.put(`${backendURL}/api/approve/${id}`); // Updated to match backend route
+      await axios.put(`${backendURL}/api/approve/${id}`);
       const [pendingRes, approvedRes] = await Promise.all([
         axios.get(`${backendURL}/api/pending-users`),
         axios.get(`${backendURL}/api/approved-users`),
@@ -75,7 +75,7 @@ const EmployeeManagement = () => {
 
   const denyUser = async (id) => {
     try {
-      await axios.put(`${backendURL}/api/deny/${id}`); // Already correct
+      await axios.put(`${backendURL}/api/deny/${id}`);
       const [pendingRes, deniedRes] = await Promise.all([
         axios.get(`${backendURL}/api/pending-users`),
         axios.get(`${backendURL}/api/denied-users`),
@@ -97,7 +97,7 @@ const EmployeeManagement = () => {
 
   const approveDeniedUser = async (id) => {
     try {
-      await axios.put(`${backendURL}/api/approve-denied/${id}`); // Updated to match backend route
+      await axios.put(`${backendURL}/api/approve-denied/${id}`);
       const [deniedRes, approvedRes] = await Promise.all([
         axios.get(`${backendURL}/api/denied-users`),
         axios.get(`${backendURL}/api/approved-users`),
@@ -141,7 +141,7 @@ const EmployeeManagement = () => {
 
   const restoreUser = async (id) => {
     try {
-      await axios.put(`${backendURL}/api/restore/${id}`); // Updated to match backend route
+      await axios.put(`${backendURL}/api/restore/${id}`);
       const [deletedRes, approvedRes] = await Promise.all([
         axios.get(`${backendURL}/api/deleted-users`),
         axios.get(`${backendURL}/api/approved-users`),

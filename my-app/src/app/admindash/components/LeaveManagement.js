@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -22,14 +22,14 @@ const LeaveManagement = () => {
   
   const backendURL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
 
-  const fetchLeaveRequests = async () => {
+  const fetchLeaveRequests = useCallback(async () => {
     setIsLoading(true);
     if (session?.user?.role === 'admin') {
       try {
         const [pendingRes, approvedRes, deniedRes] = await Promise.all([
           axios.get(`${backendURL}/api/leaves/pending`),
           axios.get(`${backendURL}/api/leaves/approved`),
-          axios.get(`${backendURL}/api/leaves/denied`)
+          axios.get(`${backendURL}/api/leaves/denied`),
         ]);
         
         setPendingRequests(pendingRes.data);
@@ -42,13 +42,13 @@ const LeaveManagement = () => {
         setIsLoading(false);
       }
     }
-  };
+  }, [session, backendURL]);
 
   useEffect(() => {
     if (session?.user?.role === 'admin') {
       fetchLeaveRequests();
     }
-  }, [session]);
+  }, [session, fetchLeaveRequests]);
 
   const handleUpdateChange = (e) => {
     setUpdateForm({ ...updateForm, [e.target.name]: e.target.value });
@@ -63,7 +63,7 @@ const LeaveManagement = () => {
         style: {
           background: '#10B981',
           color: '#fff',
-        }
+        },
       });
       
       const updatedRequest = res.data.leaveRequest;
@@ -123,12 +123,12 @@ const LeaveManagement = () => {
     
     // Apply filters
     if (filterConfig.priority) {
-      requestsToShow = requestsToShow.filter(req => req.priority === filterConfig.priority);
+      requestsToShow = requestsToShow.filter((req) => req.priority === filterConfig.priority);
     }
     
     if (filterConfig.searchTerm) {
       const searchTerm = filterConfig.searchTerm.toLowerCase();
-      requestsToShow = requestsToShow.filter(req => 
+      requestsToShow = requestsToShow.filter((req) => 
         (req.userId.fname + ' ' + req.userId.lname).toLowerCase().includes(searchTerm) ||
         req.reason.toLowerCase().includes(searchTerm)
       );
@@ -241,7 +241,6 @@ const LeaveManagement = () => {
         )}
       </AnimatePresence>
 
-      {/* Table Headers for Sorting */}
       <div className="bg-white rounded-t-lg shadow overflow-hidden mb-4">
         <div className="grid grid-cols-12 p-4 border-b bg-gray-50 text-sm font-medium text-gray-700">
           <div className="col-span-3 md:col-span-2 flex items-center cursor-pointer" onClick={() => handleSort('userName')}>
@@ -323,7 +322,6 @@ const LeaveManagement = () => {
                       Update
                     </button>
                   </div>
-                  {/* Mobile view: Show reason on expanded row */}
                   <div className="col-span-12 md:hidden mt-2 text-sm text-gray-600">
                     <strong>Reason:</strong> {request.reason}
                   </div>
@@ -361,19 +359,17 @@ const LeaveManagement = () => {
 
   return (
     <div className="container mx-auto p-4 max-w-7xl">
-      {/* Header with gradient background */}
       <div className="mb-8 bg-gradient-to-r from-blue-600 to-indigo-700 p-6 rounded-xl shadow-lg">
         <h1 className="text-3xl font-bold text-white">Leave Management</h1>
         <p className="text-blue-100 mt-2">Manage employee leave requests efficiently</p>
       </div>
 
-      {/* Tabs with animations */}
       <div className="mb-8">
         <div className="flex flex-wrap border-b border-gray-200">
           {[
             { id: 'pending', label: 'Pending', count: pendingRequests.length },
             { id: 'approved', label: 'Approved', count: approvedRequests.length },
-            { id: 'denied', label: 'Denied', count: deniedRequests.length }
+            { id: 'denied', label: 'Denied', count: deniedRequests.length },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -401,7 +397,6 @@ const LeaveManagement = () => {
         </div>
       </div>
 
-      {/* Dynamic Content Area */}
       <AnimatePresence mode="wait">
         <div key={activeTab} className="min-h-80">
           {activeTab === 'pending' && renderRequestList(pendingRequests, 'Pending Leave Requests')}
@@ -410,7 +405,6 @@ const LeaveManagement = () => {
         </div>
       </AnimatePresence>
 
-      {/* Modal for updating leave status */}
       <AnimatePresence>
         {selectedRequest && (
           <motion.div
@@ -418,7 +412,6 @@ const LeaveManagement = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
@@ -503,7 +496,6 @@ const LeaveManagement = () => {
         )}
       </AnimatePresence>
 
-      {/* Add CSS for tooltips */}
       <style jsx global>{`
         .tooltip {
           position: relative;

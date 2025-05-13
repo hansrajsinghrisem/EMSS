@@ -78,7 +78,7 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const checkResponse = await fetch("https://ems-backend-nkom.onrender.com/api/login", {
+      const checkResponse = await fetch("https://emss-wtii.onrender.com/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -417,7 +417,7 @@ export default function LoginPage() {
                 transition={{ duration: 0.5, delay: 1.2 }}
               >
                 <p className="text-sm text-gray-600">
-                  Don't have an account?{" "}
+                  Do not have an account?{" "}
                   <Link
                     href="/signup"
                     className="font-medium text-pink-600 hover:text-pink-800 transition duration-300"
